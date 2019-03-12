@@ -71,7 +71,7 @@ static constexpr bool kParallelProcessMarkStack = true;
 
 // Profiling and information flags.
 static constexpr bool kProfileLargeObjects = false;
-static constexpr bool kMeasureOverhead = false;
+//static constexpr bool kMeasureOverhead = false;
 static constexpr bool kCountTasks = false;
 static constexpr bool kCountJavaLangRefs = false;
 static constexpr bool kCountMarkedObjects = false;
@@ -1065,17 +1065,17 @@ class CheckpointMarkThreadRoots : public Closure, public RootVisitor {
   }
 
   virtual void Run(Thread* thread) OVERRIDE NO_THREAD_SAFETY_ANALYSIS {
-    ATRACE_BEGIN("Marking thread roots");
+    //ATRACE_BEGIN("Marking thread roots");
     // Note: self is not necessarily equal to thread since thread may be suspended.
     Thread* const self = Thread::Current();
     CHECK(thread == self || thread->IsSuspended() || thread->GetState() == kWaitingPerformingGc)
         << thread->GetState() << " thread " << thread << " self " << self;
     thread->VisitRoots(this);
-    ATRACE_END();
+    //ATRACE_END();
     if (revoke_ros_alloc_thread_local_buffers_at_checkpoint_) {
-      ATRACE_BEGIN("RevokeRosAllocThreadLocalBuffers");
+      //ATRACE_BEGIN("RevokeRosAllocThreadLocalBuffers");
       mark_sweep_->GetHeap()->RevokeRosAllocThreadLocalBuffers(thread);
-      ATRACE_END();
+      //ATRACE_END();
     }
     // If thread is a running mutator, then act on behalf of the garbage collector.
     // See the code in ThreadList::RunCheckpoint.
@@ -1356,29 +1356,29 @@ inline bool MarkSweep::IsMarked(const Object* object) const {
 
 void MarkSweep::FinishPhase() {
   TimingLogger::ScopedTiming t(__FUNCTION__, GetTimings());
-  if (kCountScannedTypes) {
-    VLOG(gc) << "MarkSweep scanned classes=" << class_count_.LoadRelaxed()
-        << " arrays=" << array_count_.LoadRelaxed() << " other=" << other_count_.LoadRelaxed();
-  }
-  if (kCountTasks) {
-    VLOG(gc) << "Total number of work chunks allocated: " << work_chunks_created_.LoadRelaxed();
-  }
-  if (kMeasureOverhead) {
-    VLOG(gc) << "Overhead time " << PrettyDuration(overhead_time_.LoadRelaxed());
-  }
-  if (kProfileLargeObjects) {
-    VLOG(gc) << "Large objects tested " << large_object_test_.LoadRelaxed()
-        << " marked " << large_object_mark_.LoadRelaxed();
-  }
-  if (kCountJavaLangRefs) {
-    VLOG(gc) << "References scanned " << reference_count_.LoadRelaxed();
-  }
-  if (kCountMarkedObjects) {
-    VLOG(gc) << "Marked: null=" << mark_null_count_.LoadRelaxed()
-        << " immune=" <<  mark_immune_count_.LoadRelaxed()
-        << " fastpath=" << mark_fastpath_count_.LoadRelaxed()
-        << " slowpath=" << mark_slowpath_count_.LoadRelaxed();
-  }
+//   if (kCountScannedTypes) {
+//     VLOG(gc) << "MarkSweep scanned classes=" << class_count_.LoadRelaxed()
+//         << " arrays=" << array_count_.LoadRelaxed() << " other=" << other_count_.LoadRelaxed();
+//   }
+//   if (kCountTasks) {
+//     VLOG(gc) << "Total number of work chunks allocated: " << work_chunks_created_.LoadRelaxed();
+//   }
+//   if (kMeasureOverhead) {
+//     VLOG(gc) << "Overhead time " << PrettyDuration(overhead_time_.LoadRelaxed());
+//   }
+//   if (kProfileLargeObjects) {
+//     VLOG(gc) << "Large objects tested " << large_object_test_.LoadRelaxed()
+//         << " marked " << large_object_mark_.LoadRelaxed();
+//   }
+//   if (kCountJavaLangRefs) {
+//     VLOG(gc) << "References scanned " << reference_count_.LoadRelaxed();
+//   }
+//   if (kCountMarkedObjects) {
+//     VLOG(gc) << "Marked: null=" << mark_null_count_.LoadRelaxed()
+//         << " immune=" <<  mark_immune_count_.LoadRelaxed()
+//         << " fastpath=" << mark_fastpath_count_.LoadRelaxed()
+//         << " slowpath=" << mark_slowpath_count_.LoadRelaxed();
+//   }
   CHECK(mark_stack_->IsEmpty());  // Ensure that the mark stack is empty.
   mark_stack_->Reset();
   WriterMutexLock mu(Thread::Current(), *Locks::heap_bitmap_lock_);

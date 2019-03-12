@@ -216,9 +216,9 @@ Heap::Heap(size_t initial_size, size_t growth_limit, size_t min_free, size_t max
       backtrace_lock_(nullptr),
       seen_backtrace_count_(0u),
       unique_backtrace_count_(0u) {
-  if (VLOG_IS_ON(heap) || VLOG_IS_ON(startup)) {
-    LOG(INFO) << "Heap() entering";
-  }
+//   if (VLOG_IS_ON(heap) || VLOG_IS_ON(startup)) {
+//     LOG(INFO) << "Heap() entering";
+//   }
   Runtime* const runtime = Runtime::Current();
   // If we aren't the zygote, switch to the default non zygote allocator. This may update the
   // entrypoints.
@@ -226,7 +226,7 @@ Heap::Heap(size_t initial_size, size_t growth_limit, size_t min_free, size_t max
   if (!is_zygote) {
     // Background compaction is currently not supported for command line runs.
     if (background_collector_type_ != foreground_collector_type_) {
-      VLOG(heap) << "Disabling background compaction for non zygote";
+//       VLOG(heap) << "Disabling background compaction for non zygote";
       background_collector_type_ = foreground_collector_type_;
     }
   }
@@ -242,11 +242,11 @@ Heap::Heap(size_t initial_size, size_t growth_limit, size_t min_free, size_t max
     requested_alloc_space_begin = reinterpret_cast<uint8_t*>(300 * MB) - non_moving_space_capacity;
   }
   if (!image_file_name.empty()) {
-    ATRACE_BEGIN("ImageSpace::Create");
+    //ATRACE_BEGIN("ImageSpace::Create");
     std::string error_msg;
     auto* image_space = space::ImageSpace::Create(image_file_name.c_str(), image_instruction_set,
                                                   &error_msg);
-    ATRACE_END();
+    //ATRACE_END();
     if (image_space != nullptr) {
       AddSpace(image_space);
       // Oat files referenced by image files immediately follow them in memory, ensure alloc space
@@ -298,7 +298,7 @@ Heap::Heap(size_t initial_size, size_t growth_limit, size_t min_free, size_t max
   }
   std::string error_str;
   std::unique_ptr<MemMap> non_moving_space_mem_map;
-  ATRACE_BEGIN("Create heap maps");
+  //ATRACE_BEGIN("Create heap maps");
   if (separate_non_moving_space) {
     // If we are the zygote, the non moving space becomes the zygote space when we run
     // PreZygoteFork the first time. In this case, call the map "zygote space" since we can't
@@ -335,8 +335,8 @@ Heap::Heap(size_t initial_size, size_t growth_limit, size_t min_free, size_t max
                                                       capacity_, &error_str));
     CHECK(main_mem_map_2.get() != nullptr) << error_str;
   }
-  ATRACE_END();
-  ATRACE_BEGIN("Create spaces");
+  //ATRACE_END();
+  //ATRACE_BEGIN("Create spaces");
   // Create the non moving space first so that bitmaps don't take up the address range.
   if (separate_non_moving_space) {
     // Non moving space is always dlmalloc since we currently don't have support for multiple
@@ -426,12 +426,12 @@ Heap::Heap(size_t initial_size, size_t growth_limit, size_t min_free, size_t max
   if (main_space_backup_.get() != nullptr) {
     RemoveSpace(main_space_backup_.get());
   }
-  ATRACE_END();
+  //ATRACE_END();
   // Allocate the card table.
-  ATRACE_BEGIN("Create card table");
+  //ATRACE_BEGIN("Create card table");
   card_table_.reset(accounting::CardTable::Create(heap_begin, heap_capacity));
   CHECK(card_table_.get() != nullptr) << "Failed to create card table";
-  ATRACE_END();
+  //ATRACE_END();
   if (foreground_collector_type_ == kCollectorTypeCC && kUseTableLookupReadBarrier) {
     rb_table_.reset(new accounting::ReadBarrierTable());
     DCHECK(rb_table_->IsAllCleared());
@@ -521,9 +521,9 @@ Heap::Heap(size_t initial_size, size_t growth_limit, size_t min_free, size_t max
   if (running_on_valgrind_ || gc_stress_mode_) {
     instrumentation->InstrumentQuickAllocEntryPoints();
   }
-  if (VLOG_IS_ON(heap) || VLOG_IS_ON(startup)) {
-    LOG(INFO) << "Heap() exiting";
-  }
+//   if (VLOG_IS_ON(heap) || VLOG_IS_ON(startup)) {
+//     LOG(INFO) << "Heap() exiting";
+//   }
 }
 
 MemMap* Heap::MapAnonymousPreferredAddress(const char* name, uint8_t* request_begin,
@@ -590,7 +590,7 @@ void Heap::CreateMainMallocSpace(MemMap* mem_map, size_t initial_size, size_t gr
   main_space_ = CreateMallocSpaceFromMemMap(mem_map, initial_size, growth_limit, capacity, name,
                                             can_move_objects);
   SetSpaceAsDefault(main_space_);
-  VLOG(heap) << "Created main space " << main_space_;
+  //VLOG(heap) << "Created main space " << main_space_;
 }
 
 void Heap::ChangeAllocator(AllocatorType allocator) {
@@ -1072,7 +1072,7 @@ void Heap::DumpBlockingGcCountRateHistogram(std::ostream& os) const {
 }
 
 Heap::~Heap() {
-  VLOG(heap) << "Starting ~Heap()";
+//   VLOG(heap) << "Starting ~Heap()";
   STLDeleteElements(&garbage_collectors_);
   // If we don't reset then the mark stack complains in its destructor.
   allocation_stack_->Reset();
@@ -1084,12 +1084,12 @@ Heap::~Heap() {
   delete gc_complete_lock_;
   delete pending_task_lock_;
   delete backtrace_lock_;
-  if (unique_backtrace_count_.LoadRelaxed() != 0 || seen_backtrace_count_.LoadRelaxed() != 0) {
-    LOG(INFO) << "gc stress unique=" << unique_backtrace_count_.LoadRelaxed()
-        << " total=" << seen_backtrace_count_.LoadRelaxed() +
-            unique_backtrace_count_.LoadRelaxed();
-  }
-  VLOG(heap) << "Finished ~Heap()";
+//   if (unique_backtrace_count_.LoadRelaxed() != 0 || seen_backtrace_count_.LoadRelaxed() != 0) {
+//     LOG(INFO) << "gc stress unique=" << unique_backtrace_count_.LoadRelaxed()
+//         << " total=" << seen_backtrace_count_.LoadRelaxed() +
+//             unique_backtrace_count_.LoadRelaxed();
+//   }
+//   VLOG(heap) << "Finished ~Heap()";
 }
 
 space::ContinuousSpace* Heap::FindContinuousSpaceFromObject(const mirror::Object* obj,
@@ -1168,8 +1168,8 @@ void Heap::DoPendingCollectorTransition() {
   if (desired_collector_type == kCollectorTypeHomogeneousSpaceCompact) {
     if (!CareAboutPauseTimes()) {
       PerformHomogeneousSpaceCompact();
-    } else {
-      VLOG(gc) << "Homogeneous compaction ignored due to jank perceptible process state";
+    //} else {
+    //  VLOG(gc) << "Homogeneous compaction ignored due to jank perceptible process state";
     }
   } else {
     TransitionCollector(desired_collector_type);
@@ -1178,17 +1178,17 @@ void Heap::DoPendingCollectorTransition() {
 
 void Heap::Trim(Thread* self) {
   if (!CareAboutPauseTimes()) {
-    ATRACE_BEGIN("Deflating monitors");
+    //ATRACE_BEGIN("Deflating monitors");
     // Deflate the monitors, this can cause a pause but shouldn't matter since we don't care
     // about pauses.
     Runtime* runtime = Runtime::Current();
     runtime->GetThreadList()->SuspendAll(__FUNCTION__);
-    uint64_t start_time = NanoTime();
-    size_t count = runtime->GetMonitorList()->DeflateMonitors();
-    VLOG(heap) << "Deflating " << count << " monitors took "
-        << PrettyDuration(NanoTime() - start_time);
+//    uint64_t start_time = NanoTime();
+//    size_t count = runtime->GetMonitorList()->DeflateMonitors();
+//     VLOG(heap) << "Deflating " << count << " monitors took "
+//         << PrettyDuration(NanoTime() - start_time);
     runtime->GetThreadList()->ResumeAll();
-    ATRACE_END();
+    //ATRACE_END();
   }
   TrimIndirectReferenceTables(self);
   TrimSpaces(self);
@@ -1199,9 +1199,9 @@ class TrimIndirectReferenceTableClosure : public Closure {
   explicit TrimIndirectReferenceTableClosure(Barrier* barrier) : barrier_(barrier) {
   }
   virtual void Run(Thread* thread) OVERRIDE NO_THREAD_SAFETY_ANALYSIS {
-    ATRACE_BEGIN("Trimming reference table");
+    //ATRACE_BEGIN("Trimming reference table");
     thread->GetJniEnv()->locals.Trim();
-    ATRACE_END();
+    //ATRACE_END();
     // If thread is a running mutator, then act on behalf of the trim thread.
     // See the code in ThreadList::RunCheckpoint.
     if (thread->GetState() == kRunnable) {
@@ -1215,7 +1215,7 @@ class TrimIndirectReferenceTableClosure : public Closure {
 
 void Heap::TrimIndirectReferenceTables(Thread* self) {
   ScopedObjectAccess soa(self);
-  ATRACE_BEGIN(__FUNCTION__);
+  //ATRACE_BEGIN(__FUNCTION__);
   JavaVMExt* vm = soa.Vm();
   // Trim globals indirect reference table.
   vm->TrimGlobals();
@@ -1227,7 +1227,7 @@ void Heap::TrimIndirectReferenceTables(Thread* self) {
   if (barrier_count != 0) {
     barrier.Increment(self, barrier_count);
   }
-  ATRACE_END();
+  //ATRACE_END();
 }
 
 void Heap::TrimSpaces(Thread* self) {
@@ -1242,8 +1242,8 @@ void Heap::TrimSpaces(Thread* self) {
     WaitForGcToCompleteLocked(kGcCauseTrim, self);
     collector_type_running_ = kCollectorTypeHeapTrim;
   }
-  ATRACE_BEGIN(__FUNCTION__);
-  const uint64_t start_ns = NanoTime();
+  //ATRACE_BEGIN(__FUNCTION__);
+  //const uint64_t start_ns = NanoTime();
   // Trim the managed spaces.
   uint64_t total_alloc_space_allocated = 0;
   uint64_t total_alloc_space_size = 0;
@@ -1269,12 +1269,12 @@ void Heap::TrimSpaces(Thread* self) {
   if (region_space_ != nullptr) {
     total_alloc_space_allocated -= region_space_->GetBytesAllocated();
   }
-  const float managed_utilization = static_cast<float>(total_alloc_space_allocated) /
-      static_cast<float>(total_alloc_space_size);
-  uint64_t gc_heap_end_ns = NanoTime();
+  //const float managed_utilization = static_cast<float>(total_alloc_space_allocated) /
+  //    static_cast<float>(total_alloc_space_size);
+  //uint64_t gc_heap_end_ns = NanoTime();
   // We never move things in the native heap, so we can finish the GC at this point.
   FinishGC(self, collector::kGcTypeNone);
-  size_t native_reclaimed = 0;
+//   size_t native_reclaimed = 0;
 
 #ifdef HAVE_ANDROID_OS
   // Only trim the native heap if we don't care about pauses.
@@ -1290,13 +1290,13 @@ void Heap::TrimSpaces(Thread* self) {
 #endif
   }
 #endif  // HAVE_ANDROID_OS
-  uint64_t end_ns = NanoTime();
-  VLOG(heap) << "Heap trim of managed (duration=" << PrettyDuration(gc_heap_end_ns - start_ns)
-      << ", advised=" << PrettySize(managed_reclaimed) << ") and native (duration="
-      << PrettyDuration(end_ns - gc_heap_end_ns) << ", advised=" << PrettySize(native_reclaimed)
-      << ") heaps. Managed heap utilization of " << static_cast<int>(100 * managed_utilization)
-      << "%.";
-  ATRACE_END();
+//  uint64_t end_ns = NanoTime();
+//   VLOG(heap) << "Heap trim of managed (duration=" << PrettyDuration(gc_heap_end_ns - start_ns)
+//       << ", advised=" << PrettySize(managed_reclaimed) << ") and native (duration="
+//       << PrettyDuration(end_ns - gc_heap_end_ns) << ", advised=" << PrettySize(native_reclaimed)
+//       << ") heaps. Managed heap utilization of " << static_cast<int>(100 * managed_utilization)
+//       << "%.";
+//  ATRACE_END();
 }
 
 bool Heap::IsValidObjectAddress(const mirror::Object* obj) const {
@@ -1567,8 +1567,8 @@ mirror::Object* Heap::AllocateInternalWithGc(Thread* self, AllocatorType allocat
   // or the requested size is really big. Do another GC, collecting SoftReferences this time. The
   // VM spec requires that all SoftReferences have been collected and cleared before throwing
   // OOME.
-  VLOG(gc) << "Forcing collection of SoftReferences for " << PrettySize(alloc_size)
-           << " allocation";
+  //VLOG(gc) << "Forcing collection of SoftReferences for " << PrettySize(alloc_size)
+  //         << " allocation";
   // TODO: Run finalization, but this may cause more allocations to occur.
   // We don't need a WaitForGcToComplete here either.
   DCHECK(!gc_plan_.empty());
@@ -1611,15 +1611,15 @@ mirror::Object* Heap::AllocateInternalWithGc(Thread* self, AllocatorType allocat
             }
           }
           // Always print that we ran homogeneous space compation since this can cause jank.
-          VLOG(heap) << "Ran heap homogeneous space compaction, "
-                    << " requested defragmentation "
-                    << count_requested_homogeneous_space_compaction_.LoadSequentiallyConsistent()
-                    << " performed defragmentation "
-                    << count_performed_homogeneous_space_compaction_.LoadSequentiallyConsistent()
-                    << " ignored homogeneous space compaction "
-                    << count_ignored_homogeneous_space_compaction_.LoadSequentiallyConsistent()
-                    << " delayed count = "
-                    << count_delayed_oom_.LoadSequentiallyConsistent();
+//           VLOG(heap) << "Ran heap homogeneous space compaction, "
+//                     << " requested defragmentation "
+//                     << count_requested_homogeneous_space_compaction_.LoadSequentiallyConsistent()
+//                     << " performed defragmentation "
+//                     << count_performed_homogeneous_space_compaction_.LoadSequentiallyConsistent()
+//                     << " ignored homogeneous space compaction "
+//                     << count_ignored_homogeneous_space_compaction_.LoadSequentiallyConsistent()
+//                     << " delayed count = "
+//                     << count_delayed_oom_.LoadSequentiallyConsistent();
         }
         break;
       }
@@ -1836,18 +1836,18 @@ HomogeneousSpaceCompactResult Heap::PerformHomogeneousSpaceCompact() {
   }
   // Suspend all threads.
   tl->SuspendAll(__FUNCTION__);
-  uint64_t start_time = NanoTime();
+//   uint64_t start_time = NanoTime();
   // Launch compaction.
   space::MallocSpace* to_space = main_space_backup_.release();
   space::MallocSpace* from_space = main_space_;
   to_space->GetMemMap()->Protect(PROT_READ | PROT_WRITE);
-  const uint64_t space_size_before_compaction = from_space->Size();
+//   const uint64_t space_size_before_compaction = from_space->Size();
   AddSpace(to_space);
   // Make sure that we will have enough room to copy.
   CHECK_GE(to_space->GetFootprintLimit(), from_space->GetFootprintLimit());
   collector::GarbageCollector* collector = Compact(to_space, from_space,
                                                    kGcCauseHomogeneousSpaceCompact);
-  const uint64_t space_size_after_compaction = to_space->Size();
+//   const uint64_t space_size_after_compaction = to_space->Size();
   main_space_ = to_space;
   main_space_backup_.reset(from_space);
   RemoveSpace(from_space);
@@ -1855,12 +1855,12 @@ HomogeneousSpaceCompactResult Heap::PerformHomogeneousSpaceCompact() {
   // Update performed homogeneous space compaction count.
   count_performed_homogeneous_space_compaction_++;
   // Print statics log and resume all threads.
-  uint64_t duration = NanoTime() - start_time;
-  VLOG(heap) << "Heap homogeneous space compaction took " << PrettyDuration(duration) << " size: "
-             << PrettySize(space_size_before_compaction) << " -> "
-             << PrettySize(space_size_after_compaction) << " compact-ratio: "
-             << std::fixed << static_cast<double>(space_size_after_compaction) /
-             static_cast<double>(space_size_before_compaction);
+//   uint64_t duration = NanoTime() - start_time;
+//   VLOG(heap) << "Heap homogeneous space compaction took " << PrettyDuration(duration) << " size: "
+//              << PrettySize(space_size_before_compaction) << " -> "
+//              << PrettySize(space_size_after_compaction) << " compact-ratio: "
+//              << std::fixed << static_cast<double>(space_size_after_compaction) /
+//              static_cast<double>(space_size_before_compaction);
   tl->ResumeAll();
   // Finish GC.
   reference_processor_.EnqueueClearedReferences(self);
@@ -1874,9 +1874,9 @@ void Heap::TransitionCollector(CollectorType collector_type) {
   if (collector_type == collector_type_) {
     return;
   }
-  VLOG(heap) << "TransitionCollector: " << static_cast<int>(collector_type_)
-             << " -> " << static_cast<int>(collector_type);
-  uint64_t start_time = NanoTime();
+//   VLOG(heap) << "TransitionCollector: " << static_cast<int>(collector_type_)
+//              << " -> " << static_cast<int>(collector_type);
+//   uint64_t start_time = NanoTime();
   uint32_t before_allocated = num_bytes_allocated_.LoadSequentiallyConsistent();
   Runtime* const runtime = Runtime::Current();
   ThreadList* const tl = runtime->GetThreadList();
@@ -1997,7 +1997,7 @@ void Heap::TransitionCollector(CollectorType collector_type) {
   tl->ResumeAll();
   // Can't call into java code with all threads suspended.
   reference_processor_.EnqueueClearedReferences(self);
-  uint64_t duration = NanoTime() - start_time;
+//   uint64_t duration = NanoTime() - start_time;
   GrowForUtilization(semi_space_collector_);
   DCHECK(collector != nullptr);
   LogGC(kGcCauseCollectorTransition, collector);
@@ -2010,8 +2010,8 @@ void Heap::TransitionCollector(CollectorType collector_type) {
   } else {
     saved_str = " expanded " + PrettySize(-delta_allocated);
   }
-  VLOG(heap) << "Heap transition to " << process_state_ << " took "
-      << PrettyDuration(duration) << saved_str;
+//   VLOG(heap) << "Heap transition to " << process_state_ << " took "
+//       << PrettyDuration(duration) << saved_str;
 }
 
 void Heap::ChangeCollector(CollectorType collector_type) {
@@ -2199,7 +2199,7 @@ void Heap::PreZygoteFork() {
   }
   Runtime::Current()->GetInternTable()->SwapPostZygoteWithPreZygote();
   Runtime::Current()->GetClassLinker()->MoveClassTableToPreZygote();
-  VLOG(heap) << "Starting PreZygoteFork";
+//   VLOG(heap) << "Starting PreZygoteFork";
   // Trim the pages at the end of the non moving space.
   non_moving_space_->Trim();
   // The end of the non-moving space may be protected, unprotect it so that we can copy the zygote
@@ -2259,7 +2259,7 @@ void Heap::PreZygoteFork() {
     // Update the end and write out image.
     non_moving_space_->SetEnd(target_space.End());
     non_moving_space_->SetLimit(target_space.Limit());
-    VLOG(heap) << "Create zygote space with size=" << non_moving_space_->Size() << " bytes";
+//     VLOG(heap) << "Create zygote space with size=" << non_moving_space_->Size() << " bytes";
   }
   // Change the collector to the post zygote one.
   ChangeCollector(foreground_collector_type_);
@@ -2412,7 +2412,7 @@ collector::GcType Heap::CollectGarbageInternal(collector::GcType gc_type, GcCaus
   }
   const uint64_t bytes_allocated_before_gc = GetBytesAllocated();
   // Approximate heap size.
-  ATRACE_INT("Heap size (KB)", bytes_allocated_before_gc / KB);
+  //ATRACE_INT("Heap size (KB)", bytes_allocated_before_gc / KB);
 
   DCHECK_LT(gc_type, collector::kGcTypeMax);
   DCHECK_NE(gc_type, collector::kGcTypeNone);
@@ -2494,24 +2494,25 @@ void Heap::LogGC(GcCause gc_cause, collector::GarbageCollector* collector) {
       log_gc = log_gc || pause >= long_pause_log_threshold_;
     }
   }
+  log_gc = false;
   if (log_gc) {
-    const size_t percent_free = GetPercentFree();
-    const size_t current_heap_size = GetBytesAllocated();
-    const size_t total_memory = GetTotalMemory();
+//     const size_t percent_free = GetPercentFree();
+//     const size_t current_heap_size = GetBytesAllocated();
+//     const size_t total_memory = GetTotalMemory();
     std::ostringstream pause_string;
     for (size_t i = 0; i < pause_times.size(); ++i) {
       pause_string << PrettyDuration((pause_times[i] / 1000) * 1000)
                    << ((i != pause_times.size() - 1) ? "," : "");
     }
-    LOG(INFO) << gc_cause << " " << collector->GetName()
-              << " GC freed "  << current_gc_iteration_.GetFreedObjects() << "("
-              << PrettySize(current_gc_iteration_.GetFreedBytes()) << ") AllocSpace objects, "
-              << current_gc_iteration_.GetFreedLargeObjects() << "("
-              << PrettySize(current_gc_iteration_.GetFreedLargeObjectBytes()) << ") LOS objects, "
-              << percent_free << "% free, " << PrettySize(current_heap_size) << "/"
-              << PrettySize(total_memory) << ", " << "paused " << pause_string.str()
-              << " total " << PrettyDuration((duration / 1000) * 1000);
-    VLOG(heap) << Dumpable<TimingLogger>(*current_gc_iteration_.GetTimings());
+    LOG(INFO) << gc_cause << " " << collector->GetName();
+//               << " GC freed "  << current_gc_iteration_.GetFreedObjects() << "("
+//               << PrettySize(current_gc_iteration_.GetFreedBytes()) << ") AllocSpace objects, "
+//               << current_gc_iteration_.GetFreedLargeObjects() << "("
+//               << PrettySize(current_gc_iteration_.GetFreedLargeObjectBytes()) << ") LOS objects, "
+//               << percent_free << "% free, " << PrettySize(current_heap_size) << "/"
+//               << PrettySize(total_memory) << ", " << "paused " << pause_string.str()
+//               << " total " << PrettyDuration((duration / 1000) * 1000);
+//     VLOG(heap) << Dumpable<TimingLogger>(*current_gc_iteration_.GetTimings());
   }
 }
 
@@ -3162,7 +3163,7 @@ void Heap::RosAllocVerification(TimingLogger* timings, const char* name) {
   TimingLogger::ScopedTiming t(name, timings);
   for (const auto& space : continuous_spaces_) {
     if (space->IsRosAllocSpace()) {
-      VLOG(heap) << name << " : " << space->GetName();
+//       VLOG(heap) << name << " : " << space->GetName();
       space->AsRosAllocSpace()->Verify();
     }
   }
@@ -3184,20 +3185,20 @@ collector::GcType Heap::WaitForGcToCompleteLocked(GcCause cause, Thread* self) {
       // task daemon thread, the currently running collection is
       // considered as a blocking GC.
       running_collection_is_blocking_ = true;
-      VLOG(gc) << "Waiting for a blocking GC " << cause;
+      //VLOG(gc) << "Waiting for a blocking GC " << cause;
     }
-    ATRACE_BEGIN("GC: Wait For Completion");
+    //ATRACE_BEGIN("GC: Wait For Completion");
     // We must wait, change thread state then sleep on gc_complete_cond_;
     gc_complete_cond_->Wait(self);
     last_gc_type = last_gc_type_;
-    ATRACE_END();
+    //ATRACE_END();
   }
   uint64_t wait_time = NanoTime() - wait_start;
   total_wait_time_ += wait_time;
-  if (wait_time > long_pause_log_threshold_) {
-    LOG(INFO) << "WaitForGcToComplete blocked for " << PrettyDuration(wait_time)
-        << " for cause " << cause;
-  }
+//   if (wait_time > long_pause_log_threshold_) {
+//     LOG(INFO) << "WaitForGcToComplete blocked for " << PrettyDuration(wait_time)
+//         << " for cause " << cause;
+//   }
   if (self != task_processor_->GetRunningThread()) {
     // The current thread is about to run a collection. If the thread
     // is not the heap task daemon thread, it's considered as a
@@ -3220,8 +3221,8 @@ size_t Heap::GetPercentFree() {
 
 void Heap::SetIdealFootprint(size_t max_allowed_footprint) {
   if (max_allowed_footprint > GetMaxMemory()) {
-    VLOG(gc) << "Clamp target GC heap from " << PrettySize(max_allowed_footprint) << " to "
-             << PrettySize(GetMaxMemory());
+    //VLOG(gc) << "Clamp target GC heap from " << PrettySize(max_allowed_footprint) << " to "
+    //         << PrettySize(GetMaxMemory());
     max_allowed_footprint = GetMaxMemory();
   }
   max_allowed_footprint_ = max_allowed_footprint;

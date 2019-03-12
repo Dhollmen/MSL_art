@@ -40,14 +40,14 @@ namespace art {
 
 static void Runtime_gc(JNIEnv*, jclass) {
   if (Runtime::Current()->IsExplicitGcDisabled()) {
-      LOG(INFO) << "Explicit GC skipped.";
+      //LOG(INFO) << "Explicit GC skipped.";
       return;
   }
   Runtime::Current()->GetHeap()->CollectGarbage(false);
 }
 
 NO_RETURN static void Runtime_nativeExit(JNIEnv*, jclass, jint status) {
-  LOG(INFO) << "System.exit called, status: " << status;
+  //LOG(INFO) << "System.exit called, status: " << status;
   Runtime::Current()->CallExitHook(status);
   exit(status);
 }
