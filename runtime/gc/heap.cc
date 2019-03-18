@@ -3178,6 +3178,7 @@ collector::GcType Heap::WaitForGcToComplete(GcCause cause, Thread* self) {
 collector::GcType Heap::WaitForGcToCompleteLocked(GcCause cause, Thread* self) {
   collector::GcType last_gc_type = collector::kGcTypeNone;
   uint64_t wait_start = NanoTime();
+  GcCause dummy;
   while (collector_type_running_ != kCollectorTypeNone) {
     if (self != task_processor_->GetRunningThread()) {
       // The current thread is about to wait for a currently running
@@ -3200,11 +3201,12 @@ collector::GcType Heap::WaitForGcToCompleteLocked(GcCause cause, Thread* self) {
 //         << " for cause " << cause;
 //   }
   if (self != task_processor_->GetRunningThread()) {
+     dummy = cause; 
     // The current thread is about to run a collection. If the thread
     // is not the heap task daemon thread, it's considered as a
     // blocking GC (i.e., blocking itself).
     running_collection_is_blocking_ = true;
-    VLOG(gc) << "Starting a blocking GC " << cause;
+    //VLOG(gc) << "Starting a blocking GC " << cause;
   }
   return last_gc_type;
 }

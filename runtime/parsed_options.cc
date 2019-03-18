@@ -390,7 +390,7 @@ bool ParsedOptions::Parse(const RuntimeOptions& options, bool ignore_unrecognize
 
   for (size_t i = 0; i < options.size(); ++i) {
     if (true && options[0].first == "-Xzygote") {
-      LOG(INFO) << "option[" << i << "]=" << options[i].first;
+      //LOG(INFO) << "option[" << i << "]=" << options[i].first;
     }
   }
 
